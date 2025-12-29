@@ -1,10 +1,13 @@
 package com.example.agenciadeviagens.models;
 
-import static com.example.agenciadeviagens.helper.Randoms.pickRandomLong;
+import com.example.agenciadeviagens.helper.IdCreator;
+
+import static com.example.agenciadeviagens.AppRunner.DEFAULT_DOUBLE;
 
 public class Customer {
 
-    private static final Double DEFAULT_CASHBACK = 0.0;
+    private static IdCreator idCreator;
+
 
     private Long id;
     private String name;
@@ -14,9 +17,9 @@ public class Customer {
     }
 
     public Customer(String name) {
-        this.id = pickRandomLong(1000000L);
+        this.id = idCreator.nextId();
         this.name = name;
-        this.cashback = DEFAULT_CASHBACK;
+        this.cashback = DEFAULT_DOUBLE;
     }
 
     public Long getId() {

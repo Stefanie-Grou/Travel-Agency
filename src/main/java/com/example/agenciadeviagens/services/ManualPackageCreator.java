@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static com.example.agenciadeviagens.AppRunner.BOOK_EMOJI;
-import static com.example.agenciadeviagens.AppRunner.PERSON_EMOJI;
 
 @Component
 public class ManualPackageCreator implements Actions {
 
     @Autowired
     private CustomerServices customerServices;
+
+    @Autowired
+    private Discounts discounts;
 
     private static final Logger LOGGER = Logger.getLogger(ManualPackageCreator.class.getName());
 
@@ -38,23 +40,22 @@ public class ManualPackageCreator implements Actions {
 
         System.out.println("\nEnter the total price");
         double total = Inputs.getUserDoubleInput();
-        System.out.println(total);
         return new Reservation(hotel, meals, flights, transports, total);
     }
 
     @Override
     public TravelPackage createTravelPackage() {
-        Customer customer = createCustomerManually();
-        LOGGER.info(String.format("%s Created Customer %s", PERSON_EMOJI, customer.getName()));
-
+        Customer customer = enterCustomerManually();
         List<Reservation> reservations = createReservationList();
-        LOGGER.info(String.format("%s Created Reservations %s", BOOK_EMOJI, reservations));
-
         double totalPrice = calculateTravelPackageTotalPrice(reservations);
-        LOGGER.info(String.format("%s Total Price %s", BOOK_EMOJI, totalPrice));
 
         TravelPackage travelPackage = new TravelPackage(customer, totalPrice, reservations);
+        discounts.calculateDiscounts(travelPackage);
+
+        saveTravelPackage(travelPackage);
+        discounts.checkIfCustomerIsCashbackEligible(customer);
         LOGGER.info(String.format("%s Created Travel Package %s", BOOK_EMOJI, travelPackage));
+
         return travelPackage;
     }
 
@@ -68,7 +69,7 @@ public class ManualPackageCreator implements Actions {
         return reservations;
     }
 
-    public Customer createCustomerManually() {
+    public Customer enterCustomerManually() {
         System.out.println("Enter the customer name ");
         String userName = Inputs.getUserStringInput();
         return customerServices.create(userName);

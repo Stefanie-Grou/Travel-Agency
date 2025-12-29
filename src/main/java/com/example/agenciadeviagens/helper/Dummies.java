@@ -5,19 +5,51 @@ import com.example.agenciadeviagens.models.Reservation;
 import com.example.agenciadeviagens.models.TravelPackage;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.agenciadeviagens.helper.Randoms.pickRandomInt;
 
 @Component
 public class Dummies {
 
-    public Set<Customer> createCustomerDummyList() {
-        return Set.of(new Customer("Joanne"),
-                new Customer("Angelica"),
-                new Customer("Rita"));
+    public static List<TravelPackage> travelPackageList;
+    public static Set<Customer> customersList;
+
+    public static void setTravelPackageList(List<TravelPackage> travelPackageList) {
+        Dummies.travelPackageList = travelPackageList;
+    }
+
+    public static List<TravelPackage> getTravelPackageList() {
+        return travelPackageList;
+    }
+
+    public static void addTravelPackage(TravelPackage travelPackage) {
+        travelPackageList.add(travelPackage);
+    }
+
+    public LinkedHashSet<Customer> createCustomerDummyList() {
+        LinkedHashSet<Customer> customerSet = new LinkedHashSet<>();
+        customerSet.add(new Customer("Joanne"));
+        customerSet.add(new Customer("Angelica"));
+        customerSet.add(new Customer("Daniel"));
+        return customerSet;
+    }
+
+    public static Set<Customer> getCustomersList() {
+        return customersList;
+    }
+
+    public static void addCustomer(Customer customer) {
+        customersList.add(customer);
+    }
+
+    public static void setCustomersList(Set<Customer> customersList) {
+        Dummies.customersList = customersList;
+    }
+
+    public static void printProfitAverage(List<TravelPackage> travelPackageList) {
+        OptionalDouble profitAvg = travelPackageList.stream().mapToDouble(TravelPackage::getTotal).average();
+        System.out.printf("Profit Average: %.2f\n", profitAvg.orElse(0.0));
     }
 
     public List<Reservation> createReservationDummyList() {

@@ -1,76 +1,111 @@
 package com.example.agenciadeviagens.services;
 
+import com.example.agenciadeviagens.helper.Dummies;
 import com.example.agenciadeviagens.models.Customer;
 import com.example.agenciadeviagens.models.Reservation;
 import com.example.agenciadeviagens.models.TravelPackage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.logging.Logger;
+
+import static com.example.agenciadeviagens.AppRunner.CASHBACK_EMOJI;
+import static com.example.agenciadeviagens.AppRunner.DEFAULT_DOUBLE;
 
 @Component
 public class Discounts {
 
-    private final Long MINIMUM_PACKAGES_TO_GET_DISCOUNT = 2L;
-    private final Double DISCOUNT_FIVE_PERCENT = 0.05;
-    private final Double DISCOUNT_TEN_PERCENT = 0.10;
+    @Autowired
+    private CustomerServices customerServices;
 
-    public Double calculateDiscount(List<TravelPackage> travelPackageList, Customer customer, TravelPackage travelPackage) {
-        List<Reservation> fullTravelPackageDiscount = applyFullTravelPackageDiscount(travelPackage.getReservations());
-        return null;
+    private static final int MINIMUM_PACKAGES_TO_GET_DISCOUNT = 2;
+    private static final Double TEN_PERCENT_DISCOUNT = 0.1;
+    private static final Double FIVE_PERCENT_DISCOUNT = 0.05;
+
+    private static final Logger LOGGER = Logger.getLogger(Discounts.class.getName());
+
+    public void calculateDiscounts(TravelPackage travelPackage) {
+        double originalTotal = travelPackage.getTotal();
+
+        calculateFullTravelPackageDiscount(travelPackage, originalTotal);
+        calculateHotelFlightDiscount(travelPackage, originalTotal);
+        calculateCashbackDiscount(travelPackage, originalTotal);
+        calculateTotalDiscount(travelPackage);
+        applyTotalDiscount(travelPackage);
     }
 
-
-    //If a customer has more than 2 travel packages,they get a 5% discount for a next travel package (cashback)
-    public Double calculateCashback (List<TravelPackage> travelPackageList, Customer customer) {
-        List<TravelPackage> totalOfTravelPackages = totalOfTravelPackagesByCustomer(travelPackageList, customer);
-        if (totalOfTravelPackages.size() >= MINIMUM_PACKAGES_TO_GET_DISCOUNT) {
-            return totalOfTravelPackages.stream()
-                    .mapToDouble(TravelPackage::getTotal)
-                    .sum() * (1 - DISCOUNT_FIVE_PERCENT);
-        }
-        return 0.0;
+    private void calculateTotalDiscount(TravelPackage travelPackage) {
+        travelPackage.setTotalDiscount(travelPackage.getDiscountAppliedByFullTravelPackage()
+                + travelPackage.getDiscountAppliedByHotelFlight()
+                + travelPackage.getDiscountAppliedByCashback());
     }
 
+    private void applyTotalDiscount(TravelPackage travelPackage) {
+        travelPackage.setTotal(travelPackage.getTotal() - travelPackage.getTotalDiscount());
+    }
 
-    //If a reservation has all services, they get a 10% discount
-    private List<Reservation> applyFullTravelPackageDiscount(List<Reservation> reservationList) {
-        for (Reservation reservation : reservationList) {
-            Reservation singleReservation = reservation;
-            if (singleReservation.getTransport() && singleReservation.getMeal() && singleReservation.getFlight()
-            && singleReservation.getHotel()) {
-                System.out.println(" >>>>>>> " + singleReservation.getTotal());
-                Double totalWithDiscount = singleReservation.getTotal() * DISCOUNT_TEN_PERCENT;
-                System.out.println(" >>>>>>> " + totalWithDiscount);
-                reservationList.get(reservationList.indexOf(singleReservation)).setTotal(totalWithDiscount);
+    private void calculateFullTravelPackageDiscount(TravelPackage travelPackage, double originalTotal) {
+        for (Reservation reservation : travelPackage.getReservations()) {
+            if (reservation.getTransport() && reservation.getMeal() && reservation.getFlight()
+                    && reservation.getHotel() && travelPackage.getDiscountAppliedByFullTravelPackage() == 0) {
+                travelPackage.setDiscountAppliedByFullTravelPackage(originalTotal * TEN_PERCENT_DISCOUNT);
             }
         }
-        return reservationList;
     }
 
-    private List<TravelPackage> totalOfTravelPackagesByCustomer(List<TravelPackage> travelPackageList, Customer customer) {
-        return travelPackageList.stream()
-                .filter(travelPackage -> travelPackage.getCustomer().equals(customer))
-                .toList();
+    public void calculateHotelFlightDiscount(TravelPackage travelPackage, double originalTotal) {
+        int totalOfHotels = totalOfHotels(travelPackage.getReservations());
+        int totalOfFlights = totalOfFlights(travelPackage.getReservations());
+        if (totalOfHotels >= MINIMUM_PACKAGES_TO_GET_DISCOUNT || totalOfFlights >= MINIMUM_PACKAGES_TO_GET_DISCOUNT) {
+            travelPackage.setDiscountAppliedByHotelFlight(originalTotal * FIVE_PERCENT_DISCOUNT);
+        }
     }
 
-    //If a customer buys >=2 hotel OR >=2 flight, they get a 10% discount in the current travel
-    //todo: come back here
-    public TravelPackage applyDiscountToCurrentTravelCombo(List<Reservation> reservationList, TravelPackage travelPackage) {
-        long hotelCount = reservationList.stream()
+    private void calculateCashbackDiscount(TravelPackage travelPackage, double originalTotal) {
+        if (travelPackage.getCustomer().getCashback() > DEFAULT_DOUBLE) {
+            double discountFromCashback = originalTotal * TEN_PERCENT_DISCOUNT;
+            travelPackage.setDiscountAppliedByCashback(discountFromCashback);
+            travelPackage.getCustomer().setCashback(DEFAULT_DOUBLE);
+            LOGGER.info(String.format(CASHBACK_EMOJI + "Cashback applied!"));
+        }
+    }
+
+    private void calculateCashbackDiscount(TravelPackage travelPackage) {
+        if (travelPackage.getCustomer().getCashback() > DEFAULT_DOUBLE) {
+            double discountFromCashback = travelPackage.getTotal() * TEN_PERCENT_DISCOUNT;
+            travelPackage.setDiscountAppliedByCashback(discountFromCashback);
+            travelPackage.getCustomer().setCashback(DEFAULT_DOUBLE);
+            LOGGER.info(String.format(CASHBACK_EMOJI + "Cashback applied!"));
+        }
+    }
+
+
+    private int totalOfHotels(List<Reservation> reservationList) {
+        return (int) reservationList.stream()
                 .filter(Reservation::getHotel)
                 .count();
-
-        long flightCount = reservationList.stream()
-                .filter(Reservation::getFlight)
-                .count();
-
-        if (hotelCount >= MINIMUM_PACKAGES_TO_GET_DISCOUNT || flightCount >= MINIMUM_PACKAGES_TO_GET_DISCOUNT) {
-
-        }
-
-        return null;
     }
 
+    private int totalOfFlights(List<Reservation> reservationList) {
+        return (int) reservationList.stream()
+                .filter(Reservation::getFlight)
+                .count();
+    }
 
+    public void checkIfCustomerIsCashbackEligible(Customer customer) {
+        Customer storedCustomer = customerServices.fetch(customer.getName());
+        if (storedCustomer == null) return;
 
+        List<TravelPackage> travelPackageList = Dummies.getTravelPackageList();
+        int count = (int) travelPackageList.stream()
+                .filter(travelPackage -> travelPackage.getCustomer().getName().equals(storedCustomer.getName()))
+                .count();
+
+        if (count >= 2) {
+            storedCustomer.setCashback(0.05);
+            LOGGER.info(String.format(CASHBACK_EMOJI + " Customer " + storedCustomer.getName())
+                    + " is has a 5% cashback discount for the next travel package!");
+        }
+    }
 }

@@ -1,11 +1,13 @@
 package com.example.agenciadeviagens.models;
 
 public class Reservation {
+
     private Boolean hotel;
     private Boolean meal;
     private Boolean flight;
     private Boolean transport;
     private Double total;
+    private Double discount;
 
     public Reservation() {
     }
@@ -16,6 +18,14 @@ public class Reservation {
         this.flight = flight;
         this.transport = transport;
         this.total = total;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
     }
 
     public Boolean getHotel() {
@@ -60,6 +70,13 @@ public class Reservation {
 
     @Override
     public String toString() {
-        return "Reservation [hotel=" + hotel + ", meal=" + meal + ", flight=" + flight + ", transport=" + transport + "]\n";
+        return "Reservation{" +
+                "hotel=" + hotel +
+                ", meal=" + meal +
+                ", flight=" + flight +
+                ", transport=" + transport +
+                ", total=" + total +
+                ", discount=" + discount +
+                '}';
     }
 }
