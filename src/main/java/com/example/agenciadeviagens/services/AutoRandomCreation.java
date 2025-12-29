@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.example.agenciadeviagens.AppRunner.BOOK_EMOJI;
 import static com.example.agenciadeviagens.helper.Randoms.*;
 
 @Component
@@ -23,9 +24,6 @@ public class AutoRandomCreation implements  Actions {
         this.discounts = discounts;
     }
 
-    private final String PERSON_EMOJI = "\uD83E\uDDD1";
-    private final String BOOK_EMOJI = "\uD83D\uDCD6";
-    private final String CASHBACK_EMOJI = "\uD83D\uDCB6";
     private final int MAX_NUMBER_OF_RESERVATIONS = 3;
 
     @Override
@@ -45,17 +43,18 @@ public class AutoRandomCreation implements  Actions {
         logger.info("Are transports included?\n" + transport);
 
         Reservation reservation = new Reservation(hotel, meal, flight, transport, createRandomDouble());
-        logger.info("New Reservation Created!\n" + reservation);
+        logger.info(String.format("%s Created Reservation %s", BOOK_EMOJI, reservation));
         return reservation;
     }
 
     @Override
     public TravelPackage createTravelPackage() {
         Customer customer = Randoms.pickRandomCustomer();
+        logger.info(String.format("%s Picked Customer %s", BOOK_EMOJI, customer));
         List<Reservation> reservations = createReservationList();
         double totalPrice = calculateTravelPackageTotalPrice(reservations);
         TravelPackage travelPackage = new TravelPackage(customer, totalPrice, reservations);
-        logger.info("New Travel Package Created!\n" + travelPackage);
+        logger.info(String.format("%s Created Travel Package %s", BOOK_EMOJI, travelPackage));
         return travelPackage;
     }
 

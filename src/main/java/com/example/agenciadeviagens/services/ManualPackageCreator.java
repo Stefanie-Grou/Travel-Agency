@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.example.agenciadeviagens.AppRunner.BOOK_EMOJI;
+import static com.example.agenciadeviagens.AppRunner.PERSON_EMOJI;
+
 @Component
 public class ManualPackageCreator implements Actions {
 
@@ -42,16 +45,16 @@ public class ManualPackageCreator implements Actions {
     @Override
     public TravelPackage createTravelPackage() {
         Customer customer = createCustomerManually();
-        LOGGER.info("Customer created: " + customer);
+        LOGGER.info(String.format("%s Created Customer %s", PERSON_EMOJI, customer.getName()));
 
         List<Reservation> reservations = createReservationList();
-        LOGGER.info("Reservation created: " + reservations);
+        LOGGER.info(String.format("%s Created Reservations %s", BOOK_EMOJI, reservations));
 
         double totalPrice = calculateTravelPackageTotalPrice(reservations);
-        LOGGER.info("Total price: " + totalPrice);
+        LOGGER.info(String.format("%s Total Price %s", BOOK_EMOJI, totalPrice));
 
         TravelPackage travelPackage = new TravelPackage(customer, totalPrice, reservations);
-        LOGGER.info("Travel Package created: " + travelPackage);
+        LOGGER.info(String.format("%s Created Travel Package %s", BOOK_EMOJI, travelPackage));
         return travelPackage;
     }
 

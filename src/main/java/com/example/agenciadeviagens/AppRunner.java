@@ -29,7 +29,10 @@ public class AppRunner implements CommandLineRunner {
         this.manualCreator = manualCreator;
     }
 
-    public final String AIRPLANE_EMOJI = "✈\uFE0F";
+    public static final String AIRPLANE_EMOJI = "✈️";
+    public static final String PERSON_EMOJI = "\uD83E\uDDD1";
+    public static final String BOOK_EMOJI = "\uD83D\uDCD6";
+    public static final String CASHBACK_EMOJI = "\uD83D\uDCB6";
 
     @Override
     public void run(String... args) {
