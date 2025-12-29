@@ -2,12 +2,12 @@ package com.example.agenciadeviagens;
 
 import com.example.agenciadeviagens.helper.Dummies;
 import com.example.agenciadeviagens.helper.Inputs;
+import com.example.agenciadeviagens.helper.Randoms;
 import com.example.agenciadeviagens.models.Customer;
 import com.example.agenciadeviagens.models.Reservation;
 import com.example.agenciadeviagens.models.TravelPackage;
 import com.example.agenciadeviagens.services.AutoRandomCreation;
-import com.example.agenciadeviagens.services.ManualCreator;
-import com.example.agenciadeviagens.services.TravelPackageCreator;
+import com.example.agenciadeviagens.services.ManualPackageCreator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +17,13 @@ import java.util.Set;
 @Component
 public class AppRunner implements CommandLineRunner {
 
-    private final TravelPackageCreator travelPackageCreator;
     private final Dummies dummies;
     private final AutoRandomCreation autoRandomCreation;
-    private final ManualCreator manualCreator;
+    private final ManualPackageCreator manualCreator;
 
-    public AppRunner(TravelPackageCreator travelPackageCreator, Dummies dummies,
-                     AutoRandomCreation autoRandomCreation, ManualCreator manualCreator) {
-        this.travelPackageCreator = travelPackageCreator;
+    public AppRunner(Dummies dummies,
+                     AutoRandomCreation autoRandomCreation,
+                     ManualPackageCreator manualCreator) {
         this.dummies = dummies;
         this.autoRandomCreation = autoRandomCreation;
         this.manualCreator = manualCreator;
@@ -35,6 +34,7 @@ public class AppRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         Set<Customer> customerList = dummies.createCustomerDummyList();
+        Randoms.setCustomerList(customerList);
         List<Reservation> reservationList = dummies.createReservationDummyList();
         List<TravelPackage> travelPackageList = dummies.createTravelPackageDummyList(customerList, reservationList);
 
@@ -55,8 +55,8 @@ public class AppRunner implements CommandLineRunner {
 
     private void dispatchUserChoice(int userOption) {
         switch (userOption) {
-            case 1 -> manualCreator.createTravelPackageManually();
-            case 2 -> autoRandomCreation.createAutoRandomTravelPackage();
+            case 1 -> manualCreator.createTravelPackage();
+            case 2 -> autoRandomCreation.createTravelPackage();
             case 3 -> System.exit(0);
             default -> System.out.println("Invalid option");
         }

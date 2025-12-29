@@ -6,13 +6,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CustomerServices implements Actions<Customer> {
-    @Override
+public class CustomerServices {
     public Customer create(String customer) {
         return new Customer(customer);
     }
 
-    @Override
     public Customer fetch(Long id, List<Customer> list) {
         return list.stream().filter(c -> c.getId().equals(id)).findFirst().orElse(null);
     }
